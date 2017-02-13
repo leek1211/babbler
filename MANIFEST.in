@@ -1,0 +1,3 @@
+graft babbler/templates
+graft babbler/static
+include babbler/schema.sql
