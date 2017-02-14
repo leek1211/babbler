@@ -63,13 +63,12 @@ def add_word():
     body = request.get_json(force=True)
 
     nouns = hannanum.nouns(body['sentence'])
-    words = map(lambda x: [x], nouns )
 
     db = get_db()
-    for word in words:
-        db.execute("insert into entries values (?)", word)
+    for word in nouns:
+        db.execute("insert into entries values (?)", [word])
     db.commit()
-    return str(words)
+    return ", ".join(nouns)
 
 
 
