@@ -2,13 +2,14 @@ import os
 import sqlite3
 from flask import Flask, request, g, redirect, url_for, abort, \
      render_template, flash
-from konlpy.tag import Hannanum
+from konlpy.tag import Hannanum, Kkma, Komoran, Twitter
 import jpype
 
 app = Flask(__name__) # create the application instance :)
 app.config.from_object(__name__) # load config from this file , babbler.py
 
-hannanum = Hannanum()
+engines = [Hannanum(), Kkma(), Twitter()]
+
 # Load default config and override config from an environment variable
 app.config.update(dict(
     DATABASE=os.path.join(app.root_path, 'babbler.db'),
@@ -57,18 +58,33 @@ def show_entries():
     entries = cur.fetchall()
     return render_template('show_entries.html', entries=entries)
 
+def get_keywords(nouns, freq):
+    uniq = set(nouns)
+    ret = []
+    for x in uniq:
+        if nouns.count(x) >= freq and len(x) > 1 :
+            ret.append(x)
+    return set(ret)
+
 @app.route('/words', methods=['POST'])
 def add_word():
     jpype.attachThreadToJVM()
     body = request.get_json(force=True)
+    print(body)
 
-    nouns = hannanum.nouns(body['sentence'])
+    nouns = []
+    for e in engines:
+        nouns.extend(e.nouns(body['sentence']))
+    print("nouns: " + ", ".join(nouns))
+    
+    keywords = get_keywords(nouns, len(engines) * 2)
+    print("keywords: " + ", ".join(keywords))
 
     db = get_db()
-    for word in nouns:
+    for word in keywords:
         db.execute("insert into entries values (?)", [word])
     db.commit()
-    return ", ".join(nouns)
+    return ", ".join(keywords)
 
 
 
