@@ -1,8 +1,13 @@
 # creep 
 
+## Install App
+```
+pip install --editable .
+```
+
 ## Set Flask App
 ```
-export FLASK_APP=creep.py
+export FLASK_APP=creep.creep
 ```
 ## Initialize DB
 ```
