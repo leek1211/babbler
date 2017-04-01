@@ -6,18 +6,18 @@ from konlpy.tag import Hannanum, Kkma, Komoran, Twitter
 import jpype
 
 app = Flask(__name__) # create the application instance :)
-app.config.from_object(__name__) # load config from this file , babbler.py
+app.config.from_object(__name__) # load config from this file , creep.py
 
 engines = [Hannanum(), Kkma(), Twitter()]
 
 # Load default config and override config from an environment variable
 app.config.update(dict(
-    DATABASE=os.path.join(app.root_path, 'babbler.db'),
+    DATABASE=os.path.join(app.root_path, 'creep.db'),
     SECRET_KEY='development key',
     USERNAME='admin',
     PASSWORD='default'
 ))
-app.config.from_envvar('BABBLER_SETTINGS', silent=True)
+app.config.from_envvar('creep_SETTINGS', silent=True)
 
 def connect_db():
     """Connects to the specific database."""
@@ -54,7 +54,7 @@ def close_db(error):
 @app.route('/')
 def show_entries():
     db = get_db()
-    cur = db.execute('select word, count(word) count from entries group by word order by count(word) desc ')
+    cur = db.execute('select word, count(word) count from entries group by word order by count(word), created_at desc ')
     entries = cur.fetchall()
     return render_template('show_entries.html', entries=entries)
 
@@ -77,12 +77,12 @@ def add_word():
         nouns.extend(e.nouns(body['sentence']))
     print("nouns: " + ", ".join(nouns))
     
-    keywords = get_keywords(nouns, len(engines) * 2)
+    keywords = get_keywords(nouns, len(engines) * 0.5)
     print("keywords: " + ", ".join(keywords))
 
     db = get_db()
     for word in keywords:
-        db.execute("insert into entries values (?)", [word])
+        db.execute("insert into entries values (?, DateTime('now'))", [word])
     db.commit()
     return ", ".join(keywords)
 

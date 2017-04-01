@@ -1,8 +1,8 @@
-# babbler
+# creep 
 
 ## Set Flask App
 ```
-export FLASK_APP=babbler
+export FLASK_APP=creep.py
 ```
 ## Initialize DB
 ```

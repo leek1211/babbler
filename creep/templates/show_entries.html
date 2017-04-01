@@ -2,7 +2,7 @@
 {% block body %}
   <ul class=entries>
   {% for entry in entries %}
-  <li><h2>{{ entry.word}}</h2> {{entry.count}}
+  <li><h2>{{entry.word}}</h2> {{entry.count}}
   {% else %}
     <li><em>Unbelievable.  No entries here so far</em>
   {% endfor %}
