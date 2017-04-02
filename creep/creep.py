@@ -4,11 +4,14 @@ from flask import Flask, request, g, redirect, url_for, abort, \
      render_template, flash
 from konlpy.tag import Hannanum, Kkma, Komoran, Twitter
 import jpype
+import requests
 
 app = Flask(__name__) # create the application instance :)
 app.config.from_object(__name__) # load config from this file , creep.py
 
 engines = [Hannanum(), Kkma(), Twitter()]
+
+GOOGLE_SEARCH_URL='https://www.googleapis.com/customsearch/v1'
 
 # Load default config and override config from an environment variable
 app.config.update(dict(
@@ -17,7 +20,9 @@ app.config.update(dict(
     USERNAME='admin',
     PASSWORD='default'
 ))
-app.config.from_envvar('creep_SETTINGS', silent=True)
+env = os.environ
+GOOGLE_API_KEY = env['GOOGLE_API_KEY']
+GOOGLE_ID = env['GOOGLE_ID']
 
 def connect_db():
     """Connects to the specific database."""
@@ -86,5 +91,33 @@ def add_word():
     db.commit()
     return ", ".join(keywords)
 
+@app.route('/images', methods=['GET'])
+def get_latest_keyword():
+    db = get_db()
+    cur = db.execute('select word from entries order by created_at desc limit 1')
+    keyword = cur.fetchone()['word']
 
+    params = dict (
+        searchType = 'image',
+        key = GOOGLE_API_KEY,
+        cx = GOOGLE_ID,
+        q = keyword
+    )
+    response= requests.get(url = GOOGLE_SEARCH_URL, params=params)
+    items = response.json()['items']
+
+    item = response.json()['items'][1]
+    image = item['image']
+    image_url = item['link']
+    height = image['height']
+    width = image['width']
+    ratio = height / width
+    if height > width:
+        height = min(height, 400)
+        width = height / ratio
+    else :
+        width = min(width, 400)
+        height = width * ratio
+
+    return render_template('show_image.html', keyword=keyword, image_url=image_url, height = height, width = width)
 
