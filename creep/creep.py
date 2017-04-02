@@ -62,7 +62,7 @@ def close_db(error):
 @app.route('/')
 def show_entries():
     db = get_db()
-    cur = db.execute('select word, count(word) count from entries group by word order by count(word), created_at desc ')
+    cur = db.execute('select word from entries order by created_at desc limit 40')
     entries = cur.fetchall()
     return render_template('show_entries.html', entries=entries)
 
