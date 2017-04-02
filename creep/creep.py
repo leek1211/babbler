@@ -122,9 +122,20 @@ def get_latest_keyword():
     response= requests.get(url = GOOGLE_SEARCH_URL, params=params)
     items = response.json()['items']
 
-    item = response.json()['items'][0]
-    image = item['image']
+    idx = 0
+    for i in range(0, 10):
+        lk =  items[i]['link']
+        try:
+            rsp = requests.get(url=lk)
+            rsp.raise_for_status()
+        except requests.exceptions.HTTPError as err:
+            continue
+        idx = i
+        break
+
+    item = items[idx]
     image_url = item['link']
+    image = item['image']
 
     p = resize(image['width'], image['height'])
     width = p['width']
