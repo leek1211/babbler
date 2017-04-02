@@ -5,13 +5,13 @@ from flask import Flask, request, g, redirect, url_for, abort, \
 from konlpy.tag import Hannanum, Kkma, Komoran, Twitter
 import jpype
 import requests
+import collections
+import random
 
 app = Flask(__name__) # create the application instance :)
 app.config.from_object(__name__) # load config from this file , creep.py
 
 engines = [Hannanum(), Kkma(), Twitter()]
-
-GOOGLE_SEARCH_URL='https://www.googleapis.com/customsearch/v1'
 
 # Load default config and override config from an environment variable
 app.config.update(dict(
@@ -20,9 +20,12 @@ app.config.update(dict(
     USERNAME='admin',
     PASSWORD='default'
 ))
+
+GOOGLE_SEARCH_URL='https://www.googleapis.com/customsearch/v1'
 env = os.environ
 GOOGLE_API_KEY = env['GOOGLE_API_KEY']
 GOOGLE_ID = env['GOOGLE_ID']
+
 
 def connect_db():
     """Connects to the specific database."""
@@ -91,11 +94,24 @@ def add_word():
     db.commit()
     return ", ".join(keywords)
 
+
+def resize(width, height):
+    ratio = height / width
+    if height > width:
+        height = min(height, 400)
+        width = height / ratio
+    else :
+        width = min(width, 400)
+        height = width * ratio
+    return { 'width': width, 'height': height }
+   
+
 @app.route('/images', methods=['GET'])
 def get_latest_keyword():
     db = get_db()
-    cur = db.execute('select word from entries order by created_at desc limit 1')
-    keyword = cur.fetchone()['word']
+    cur = db.execute('select word from entries order by created_at desc limit 10')
+    keywords = cur.fetchall()
+    keyword = random.choice(keywords)['word']
 
     params = dict (
         searchType = 'image',
@@ -109,15 +125,10 @@ def get_latest_keyword():
     item = response.json()['items'][1]
     image = item['image']
     image_url = item['link']
-    height = image['height']
-    width = image['width']
-    ratio = height / width
-    if height > width:
-        height = min(height, 400)
-        width = height / ratio
-    else :
-        width = min(width, 400)
-        height = width * ratio
+
+    p = resize(image['width'], image['height'])
+    width = p['width']
+    height = p['height']
 
     return render_template('show_image.html', keyword=keyword, image_url=image_url, height = height, width = width)
 
