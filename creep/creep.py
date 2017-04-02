@@ -109,7 +109,7 @@ def resize(width, height):
 @app.route('/images', methods=['GET'])
 def get_latest_keyword():
     db = get_db()
-    cur = db.execute('select word from entries order by created_at desc limit 30')
+    cur = db.execute('select word from entries order by created_at desc limit 10')
     keywords = cur.fetchall()
     keyword = random.choice(keywords)['word']
 
