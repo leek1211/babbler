@@ -109,7 +109,7 @@ def resize(width, height):
 @app.route('/images', methods=['GET'])
 def get_latest_keyword():
     db = get_db()
-    cur = db.execute('select word from entries order by created_at desc limit 10')
+    cur = db.execute('select word from entries order by created_at desc limit 30')
     keywords = cur.fetchall()
     keyword = random.choice(keywords)['word']
 
@@ -122,7 +122,7 @@ def get_latest_keyword():
     response= requests.get(url = GOOGLE_SEARCH_URL, params=params)
     items = response.json()['items']
 
-    item = response.json()['items'][1]
+    item = response.json()['items'][0]
     image = item['image']
     image_url = item['link']
 
