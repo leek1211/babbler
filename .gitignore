@@ -1,4 +1,4 @@
-creep.db
+*.db
 .eggs/
 .DS_Store
 *.pyc
