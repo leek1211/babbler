@@ -59,12 +59,46 @@ def close_db(error):
     if hasattr(g, 'sqlite_db'):
         g.sqlite_db.close()
 
-@app.route('/')
-def show_entries():
-    db = get_db()
-    cur = db.execute('select word from entries order by created_at desc limit 40')
-    entries = cur.fetchall()
-    return render_template('show_entries.html', entries=entries)
+def resize(width, height):
+    ratio = height / width
+    if height > width:
+        height = min(height, 400)
+        width = height / ratio
+    else :
+        width = min(width, 400)
+        height = width * ratio
+    return { 'width': width, 'height': height }
+ 
+
+def get_google_image(word):
+    print("sending request to Google Image API...")
+    params = dict (
+        searchType = 'image',
+        key = GOOGLE_API_KEY,
+        cx = GOOGLE_ID,
+        q = word 
+    )
+    response= requests.get(url = GOOGLE_SEARCH_URL, params=params)
+    items = response.json()['items']
+
+    idx = 0
+    for i in range(0, 10):
+        lk =  items[i]['link']
+        try:
+            rsp = requests.get(url=lk)
+            rsp.raise_for_status()
+        except requests.exceptions.HTTPError as err:
+            continue
+        idx = i
+        break
+    item = items[idx]
+    image_url = item['link']
+    image = item['image']
+    p = resize(image['width'], image['height'])
+    width = p['width']
+    height = p['height']
+
+    return [image_url, height, width]
 
 def get_keywords(nouns, freq):
     uniq = set(nouns)
@@ -73,6 +107,13 @@ def get_keywords(nouns, freq):
         if nouns.count(x) >= freq and len(x) > 1 :
             ret.append(x)
     return set(ret)
+
+@app.route('/')
+def show_entries():
+    db = get_db()
+    cur = db.execute('select word from entries order by created_at desc limit 40')
+    entries = cur.fetchall()
+    return render_template('show_entries.html', entries=entries)
 
 @app.route('/words', methods=['POST'])
 def add_word():
@@ -91,55 +132,23 @@ def add_word():
     db = get_db()
     for word in keywords:
         db.execute("insert into entries values (?, DateTime('now'))", [word])
+
     db.commit()
     return ", ".join(keywords)
-
-
-def resize(width, height):
-    ratio = height / width
-    if height > width:
-        height = min(height, 400)
-        width = height / ratio
-    else :
-        width = min(width, 400)
-        height = width * ratio
-    return { 'width': width, 'height': height }
-   
 
 @app.route('/images', methods=['GET'])
 def get_latest_keyword():
     db = get_db()
-    cur = db.execute('select word from entries order by created_at desc limit 10')
+    cur = db.execute('select * from entries order by created_at desc limit 10')
     keywords = cur.fetchall()
-    keyword = random.choice(keywords)['word']
+    row = random.choice(keywords)
 
-    params = dict (
-        searchType = 'image',
-        key = GOOGLE_API_KEY,
-        cx = GOOGLE_ID,
-        q = keyword
-    )
-    response= requests.get(url = GOOGLE_SEARCH_URL, params=params)
-    items = response.json()['items']
-
-    idx = 0
-    for i in range(0, 10):
-        lk =  items[i]['link']
-        try:
-            rsp = requests.get(url=lk)
-            rsp.raise_for_status()
-        except requests.exceptions.HTTPError as err:
-            continue
-        idx = i
-        break
-
-    item = items[idx]
-    image_url = item['link']
-    image = item['image']
-
-    p = resize(image['width'], image['height'])
-    width = p['width']
-    height = p['height']
+    keyword = row['word']
+    item = get_google_image(keyword)
+    image_url = item[0]
+    height = item[1]
+    width = item[2]
 
     return render_template('show_image.html', keyword=keyword, image_url=image_url, height = height, width = width)
+
 
