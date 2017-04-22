@@ -13,6 +13,9 @@ app.config.from_object(__name__) # load config from this file , creep.py
 
 engines = [Hannanum(), Kkma(), Twitter()]
 
+for e in engines:
+    print(e.nouns("사전"))
+
 # Load default config and override config from an environment variable
 app.config.update(dict(
     DATABASE=os.path.join(app.root_path, 'creep.db'),
@@ -25,7 +28,6 @@ GOOGLE_SEARCH_URL='https://www.googleapis.com/customsearch/v1'
 env = os.environ
 GOOGLE_API_KEY = env['GOOGLE_API_KEY']
 GOOGLE_ID = env['GOOGLE_ID']
-
 
 def connect_db():
     """Connects to the specific database."""
@@ -59,17 +61,6 @@ def close_db(error):
     if hasattr(g, 'sqlite_db'):
         g.sqlite_db.close()
 
-def resize(width, height):
-    ratio = height / width
-    if height > width:
-        height = min(height, 400)
-        width = height / ratio
-    else :
-        width = min(width, 400)
-        height = width * ratio
-    return { 'width': width, 'height': height }
- 
-
 def get_google_image(word):
     print("sending request to Google Image API...")
     params = dict (
@@ -93,12 +84,8 @@ def get_google_image(word):
         break
     item = items[idx]
     image_url = item['link']
-    image = item['image']
-    p = resize(image['width'], image['height'])
-    width = p['width']
-    height = p['height']
 
-    return [image_url, height, width]
+    return image_url
 
 def get_keywords(nouns, freq):
     uniq = set(nouns)
@@ -108,10 +95,22 @@ def get_keywords(nouns, freq):
             ret.append(x)
     return set(ret)
 
+"""
+ROUTES
+Creep Routes
+
+GET /: Index page
+
+POST /words : add words
+
+GET /images : show images
+
+"""
+
 @app.route('/')
 def show_entries():
     db = get_db()
-    cur = db.execute('select word from entries order by created_at desc limit 40')
+    cur = db.execute('select * from entries order by created_at desc limit 40')
     entries = cur.fetchall()
     return render_template('show_entries.html', entries=entries)
 
@@ -131,7 +130,7 @@ def add_word():
 
     db = get_db()
     for word in keywords:
-        db.execute("insert into entries values (?, DateTime('now'))", [word])
+        db.execute("insert into entries values (?, NULL, DateTime('now'))", [word])
 
     db.commit()
     return ", ".join(keywords)
@@ -144,11 +143,14 @@ def get_latest_keyword():
     row = random.choice(keywords)
 
     keyword = row['word']
-    item = get_google_image(keyword)
-    image_url = item[0]
-    height = item[1]
-    width = item[2]
+    created_at = row['created_at']
+    image_url = row['url']
 
-    return render_template('show_image.html', keyword=keyword, image_url=image_url, height = height, width = width)
+    if image_url is None:
+        image_url = get_google_image(keyword)
+        db.execute('update entries set url = ? where word = ? and created_at = ?', [image_url, keyword, created_at])
+        db.commit()
+
+    return render_template('show_image.html', keyword=keyword, image_url=image_url)
 
 
