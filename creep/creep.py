@@ -54,6 +54,13 @@ def initdb_command():
 Helper Functions
 
 """
+
+def get_time_before_hours(time, hours):
+    return time - hours * 60 * 60
+
+def get_current_time():
+    return calendar.timegm(time.gmtime())
+
 def get_google_image(word):
     print("sending request to Google Image API...")
     params = dict (
@@ -121,8 +128,8 @@ def add_word():
         nouns.extend(e.nouns(body['sentence']))
     
     keywords = get_keywords(nouns, len(engines) * 0.5)
-    current = calendar.timegm(time.gmtime())
-    day_before = current - 24 * 60 * 60
+    current = get_current_time()
+    day_before = get_time_before_hours(current, 24)
 
     # Query for the google searched words within last 24 hours
     db = mysql.connection
@@ -151,13 +158,21 @@ def add_word():
 def get_latest_keyword():
     db = mysql.connection
     cur = db.cursor()
-    cur.execute('select * from keywords order by created_at desc limit 20')
+
+    # Query the keywords only for the last 30 minutes.
+    now = get_current_time()
+    hour_before = get_time_before_hours(now, 0.5)
+    cur.execute('select * from keywords where created_at > %s', [hour_before])
     keywords = cur.fetchall()
+    if len(keywords) == 0:
+        cur.execute('select * from keywords order by created_at desc limit 100')
+        keywords = cur.fetchall()
+
     row = random.choice(keywords)
 
     word = row['word']
     created_at = row['created_at']
-    day_before = created_at - 24 * 60 * 60
+    day_before = get_time_before_hours(created_at, 24)
     image_url = row['url']
 
     if image_url is None:
