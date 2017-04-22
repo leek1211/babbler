@@ -1,27 +1,34 @@
 import os
-import sqlite3
 from flask import Flask, request, g, redirect, url_for, abort, \
      render_template, flash
+from flask_mysqldb import MySQL
 from konlpy.tag import Hannanum, Kkma, Komoran, Twitter
 import jpype
 import requests
 import collections
 import random
+import calendar
+import time
+import datetime
 
 app = Flask(__name__) # create the application instance :)
 app.config.from_object(__name__) # load config from this file , creep.py
+mysql = MySQL(app)
 
 engines = [Hannanum(), Kkma(), Twitter()]
 
 for e in engines:
-    print(e.nouns("사전"))
+    print(e.nouns("사전 초기화"))
 
 # Load default config and override config from an environment variable
 app.config.update(dict(
-    DATABASE=os.path.join(app.root_path, 'creep.db'),
     SECRET_KEY='development key',
-    USERNAME='admin',
-    PASSWORD='default'
+    MYSQL_HOST='127.0.0.1',
+    MYSQL_USER='root',
+    MYSQL_PASSWORD='123456',
+    MYSQL_DB='creep',
+    MYSQL_CURSORCLASS='DictCursor',
+    MYSQL_PORT=3306
 ))
 
 GOOGLE_SEARCH_URL='https://www.googleapis.com/customsearch/v1'
@@ -29,38 +36,24 @@ env = os.environ
 GOOGLE_API_KEY = env['GOOGLE_API_KEY']
 GOOGLE_ID = env['GOOGLE_ID']
 
-def connect_db():
-    """Connects to the specific database."""
-    rv = sqlite3.connect(app.config['DATABASE'])
-    rv.row_factory = sqlite3.Row
-    return rv
+"""
 
-def init_db():
-    db = get_db()
-    with app.open_resource('schema.sql', mode='r') as f:
-        db.cursor().executescript(f.read())
-    db.commit()
+Flask Commands
 
+"""
 @app.cli.command('initdb')
 def initdb_command():
     """Initializes the database."""
-    init_db()
+    db = mysql.connection
+    with app.open_resource('schema.sql', mode='r') as f:
+        db.cursor().execute(f.read())
     print('Initialized the database.')
 
-def get_db():
-    """Opens a new database connection if there is none yet for the
-    current application context.
-    """
-    if not hasattr(g, 'sqlite_db'):
-        g.sqlite_db = connect_db()
-    return g.sqlite_db
+"""
 
-@app.teardown_appcontext
-def close_db(error):
-    """Closes the database again at the end of the request."""
-    if hasattr(g, 'sqlite_db'):
-        g.sqlite_db.close()
+Helper Functions
 
+"""
 def get_google_image(word):
     print("sending request to Google Image API...")
     params = dict (
@@ -106,13 +99,16 @@ POST /words : add words
 GET /images : show images
 
 """
-
 @app.route('/')
 def show_entries():
-    db = get_db()
-    cur = db.execute('select * from entries order by created_at desc limit 40')
-    entries = cur.fetchall()
-    return render_template('show_entries.html', entries=entries)
+    cur = mysql.connection.cursor()
+    cur.execute('select * from keywords order by created_at desc limit 40')
+    keywords = cur.fetchall()
+
+    for k in keywords:
+        k['created_at'] = datetime.datetime.fromtimestamp(k['created_at'])
+
+    return render_template('show_entries.html', entries=keywords)
 
 @app.route('/words', methods=['POST'])
 def add_word():
@@ -123,34 +119,52 @@ def add_word():
     nouns = []
     for e in engines:
         nouns.extend(e.nouns(body['sentence']))
-    print("nouns: " + ", ".join(nouns))
     
     keywords = get_keywords(nouns, len(engines) * 0.5)
-    print("keywords: " + ", ".join(keywords))
+    current = calendar.timegm(time.gmtime())
+    day_before = current - 24 * 60 * 60
 
-    db = get_db()
+    # Query for the google searched words within last 24 hours
+    db = mysql.connection
+    cur = db.cursor()
+    sql='SELECT * FROM keywords WHERE url IS NOT NULL AND created_at > %s AND word IN (%s)'
+    in_p=', '.join(list(map(lambda x: '%s', keywords)))
+    sql =  sql % ('%s', in_p)
+    params = []
+    params.append(day_before)
+    params.extend(keywords)
+    cur.execute(sql, params)
+    existing_keywords = cur.fetchall()
+
+    # For the words already googled, use those urls.
+    existing_url = {}
+    for k in existing_keywords:
+        existing_url[k['word']] = k['url']
+
     for word in keywords:
-        db.execute("insert into entries values (?, NULL, DateTime('now'))", [word])
-
+        cur.execute("insert into keywords values (%s, %s, %s)", (word, existing_url.get(word), current))
     db.commit()
+
     return ", ".join(keywords)
 
 @app.route('/images', methods=['GET'])
 def get_latest_keyword():
-    db = get_db()
-    cur = db.execute('select * from entries order by created_at desc limit 10')
+    db = mysql.connection
+    cur = db.cursor()
+    cur.execute('select * from keywords order by created_at desc limit 20')
     keywords = cur.fetchall()
     row = random.choice(keywords)
 
-    keyword = row['word']
+    word = row['word']
     created_at = row['created_at']
+    day_before = created_at - 24 * 60 * 60
     image_url = row['url']
 
     if image_url is None:
-        image_url = get_google_image(keyword)
-        db.execute('update entries set url = ? where word = ? and created_at = ?', [image_url, keyword, created_at])
+        image_url = get_google_image(word)
+        cur.execute('UPDATE keywords SET url = %s WHERE url IS NULL AND word = %s AND created_at > %s', (image_url, word, day_before))
         db.commit()
 
-    return render_template('show_image.html', keyword=keyword, image_url=image_url)
+    return render_template('show_image.html', keyword=word, image_url=image_url)
 
 

@@ -5,6 +5,6 @@ setup(
     packages=['creep'],
     include_package_data=True,
     install_requires=[
-        'flask', 'konlpy', 'jpype1', 'requests',
+        'flask', 'konlpy', 'jpype1', 'requests', 'flask-mysqldb'
     ],
 )
