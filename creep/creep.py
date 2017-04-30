@@ -15,10 +15,10 @@ app = Flask(__name__) # create the application instance :)
 app.config.from_object(__name__) # load config from this file , creep.py
 mysql = MySQL(app)
 
-engines = [Hannanum()] # [Hannanum(), Kkma(), Twitter()]
+engines = [Hannanum(), Kkma(), Twitter()]
 
-# for e in engines:
-#     print(e.nouns("사전 초기화"))
+for e in engines:
+    print(e.nouns("사전 초기화"))
 
 # Load default config and override config from an environment variable
 app.config.update(dict(
