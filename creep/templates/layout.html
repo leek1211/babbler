@@ -2,6 +2,18 @@
 <title>Creep</title>
 <link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script language='VBScript'>
+  Sub Print()
+  OLECMDID_PRINT = 6
+  OLECMDEXECOPT_DONTPROMPTUSER = 2
+  OLECMDEXECOPT_PROMPTUSER = 1
+  call WB.ExecWB(OLECMDID_PRINT, OLECMDEXECOPT_DONTPROMPTUSER,1)
+  End Sub
+  document.write "<object ID='WB' WIDTH=0 HEIGHT=0 CLASSID='CLSID:8856F961-340A-11D0-A96B-00C04FD705A2'></object>"
+</script>
+<script type="text/javascript"> 
+window.onload=function(){self.print();} 
+</script> 
 <div class=page>
   <h1>Creep</h1>
   <div class=metanav>
