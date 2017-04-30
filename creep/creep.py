@@ -15,10 +15,10 @@ app = Flask(__name__) # create the application instance :)
 app.config.from_object(__name__) # load config from this file , creep.py
 mysql = MySQL(app)
 
-engines = [Hannanum(), Kkma(), Twitter()]
+engines = [Hannanum()] # [Hannanum(), Kkma(), Twitter()]
 
-for e in engines:
-    print(e.nouns("사전 초기화"))
+# for e in engines:
+#     print(e.nouns("사전 초기화"))
 
 # Load default config and override config from an environment variable
 app.config.update(dict(
@@ -128,6 +128,8 @@ def add_word():
         nouns.extend(e.nouns(body['sentence']))
     
     keywords = get_keywords(nouns, len(engines) * 0.5)
+    if len(keywords) == 0:
+        return ""
     current = get_current_time()
     day_before = get_time_before_hours(current, 24)
 
