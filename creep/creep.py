@@ -17,9 +17,6 @@ mysql = MySQL(app)
 
 engines = [Hannanum(), Kkma(), Twitter()]
 
-for e in engines:
-    print(e.nouns("사전 초기화"))
-
 # Load default config and override config from an environment variable
 app.config.update(dict(
     SECRET_KEY='development key',
@@ -74,7 +71,7 @@ def get_giphy_trending_image():
 
 
 def get_giphy_image(word):
-    print("sending request to Giphy Search API...")
+    print("sending request to Giphy Search API for the word " + word + " ...")
     params = dict (
         api_key = GIPHY_API_KEY,
         lang='ko',
