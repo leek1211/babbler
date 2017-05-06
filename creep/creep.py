@@ -31,10 +31,12 @@ app.config.update(dict(
     MYSQL_PORT=3306
 ))
 
-GOOGLE_SEARCH_URL='https://www.googleapis.com/customsearch/v1'
 env = os.environ
-GOOGLE_API_KEY = env['GOOGLE_API_KEY']
-GOOGLE_ID = env['GOOGLE_ID']
+
+GIPHY_API_KEY='dc6zaTOxFJmzC'
+GIPHY_SEARCH_URL='http://api.giphy.com/v1/gifs/search'
+GIPHY_TRENDING_URL='http://api.giphy.com/v1/gifs/trending'
+
 
 """
 
@@ -61,31 +63,31 @@ def get_time_before_hours(time, hours):
 def get_current_time():
     return calendar.timegm(time.gmtime())
 
-def get_google_image(word):
-    print("sending request to Google Image API...")
+def get_giphy_trending_image():
+    print("seding request to Giphy Trending API")
+    
     params = dict (
-        searchType = 'image',
-        key = GOOGLE_API_KEY,
-        cx = GOOGLE_ID,
+        api_key = GIPHY_API_KEY
+    )
+    response= requests.get(url = GIPHY_TRENDING_URL, params=params)
+    return response.json()['data']
+
+
+def get_giphy_image(word):
+    print("sending request to Giphy Search API...")
+    params = dict (
+        api_key = GIPHY_API_KEY,
+        lang='ko',
         q = word 
     )
-    response= requests.get(url = GOOGLE_SEARCH_URL, params=params)
-    items = response.json()['items']
+    response= requests.get(url = GIPHY_SEARCH_URL, params=params)
+    items = response.json()['data']
+    if len(items) == 0:
+        items = get_giphy_trending_image()
 
-    idx = 0
-    for i in range(0, 10):
-        lk =  items[i]['link']
-        try:
-            rsp = requests.get(url=lk)
-            rsp.raise_for_status()
-        except requests.exceptions.HTTPError as err:
-            continue
-        idx = i
-        break
-    item = items[idx]
-    image_url = item['link']
 
-    return image_url
+    selected = random.choice(items)
+    return selected['images']['original']['url']
 
 def get_keywords(nouns, freq):
     uniq = set(nouns)
@@ -130,28 +132,14 @@ def add_word():
     keywords = get_keywords(nouns, len(engines) * 0.5)
     if len(keywords) == 0:
         return ""
+
     current = get_current_time()
     day_before = get_time_before_hours(current, 24)
 
-    # Query for the google searched words within last 24 hours
     db = mysql.connection
     cur = db.cursor()
-    sql='SELECT * FROM keywords WHERE url IS NOT NULL AND created_at > %s AND word IN (%s)'
-    in_p=', '.join(list(map(lambda x: '%s', keywords)))
-    sql =  sql % ('%s', in_p)
-    params = []
-    params.append(day_before)
-    params.extend(keywords)
-    cur.execute(sql, params)
-    existing_keywords = cur.fetchall()
-
-    # For the words already googled, use those urls.
-    existing_url = {}
-    for k in existing_keywords:
-        existing_url[k['word']] = k['url']
-
     for word in keywords:
-        cur.execute("insert into keywords values (%s, %s, %s)", (word, existing_url.get(word), current))
+        cur.execute("insert into keywords values (%s, NULL, %s)", (word, current))
     db.commit()
 
     return ", ".join(keywords)
@@ -174,14 +162,11 @@ def get_latest_keyword():
 
     word = row['word']
     created_at = row['created_at']
-    day_before = get_time_before_hours(created_at, 24)
     image_url = row['url']
 
     if image_url is None:
-        image_url = get_google_image(word)
-        cur.execute('UPDATE keywords SET url = %s WHERE url IS NULL AND word = %s AND created_at > %s', (image_url, word, day_before))
+        image_url = get_giphy_image(word)
+        # cur.execute('UPDATE keywords SET url = %s WHERE url IS NULL AND word = %s AND created_at = %s', (image_url, word, created_at))
         db.commit()
 
     return render_template('show_image.html', keyword=word, image_url=image_url)
-
-
