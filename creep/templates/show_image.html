@@ -47,10 +47,15 @@ body, html {
     vertical-align: middle;
     line-height: normal;
 }
+.timestamp-box {
+    position: fixed;
+    top: 50%;
+    left: 99%;
+    margin-top: -65px;
+}
 .timestamp {
     display:block;
-    margin-top:370px;
-    margin-right:10px;
+    top: 50%;
     float: right;
     color: #FFFFFF;
     font-size:8px;
@@ -60,11 +65,13 @@ body, html {
 
 <body>
 <div class="bg">
+<div class="timestamp-box">
 <span class="timestamp">
     {% for char in created_at %}
     {{ char }}<br/>
     {% endfor %}
 </span>
+</div>
 <div class="box">
     <span class="keyword">{{keyword}}</span>
 </div>
