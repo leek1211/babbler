@@ -164,6 +164,7 @@ def get_latest_keyword():
     if image_url is None:
         image_url = get_giphy_image(word)
         # cur.execute('UPDATE keywords SET url = %s WHERE url IS NULL AND word = %s AND created_at = %s', (image_url, word, created_at))
-        db.commit()
+        # db.commit()
 
-    return render_template('show_image.html', keyword=word, image_url=image_url)
+    time_string = time.strftime('%Y-%m-%d %H-%M', time.localtime(created_at))
+    return render_template('show_image.html', keyword=word, image_url=image_url, created_at=time_string)
