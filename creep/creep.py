@@ -10,6 +10,10 @@ import random
 import calendar
 import time
 import datetime
+from translate import Translator
+
+
+free_translator = Translator(to_lang="en", from_lang="ko")
 
 app = Flask(__name__) # create the application instance :)
 app.config.from_object(__name__) # load config from this file , creep.py
@@ -54,6 +58,26 @@ Helper Functions
 
 """
 
+def translate_to_english(korean_text):
+    db = mysql.connection
+    cur = db.cursor()
+    cur.execute('SELECT * FROM dictionary WHERE korean = %s and english is NOT NULL', [korean_text])
+    entries = cur.fetchall()
+
+    if len(entries) == 0:
+        try:
+            english_text = free_translator.translate(korean_text)
+            print("translated " + korean_text + " to " + english_text)
+            cur.execute("INSERT into dictionary values (%s, %s)", (korean_text, english_text))
+            db.commit()
+            return english_text
+        except Exception as e:
+            print("secondary translation failed {0}".format(e))
+            return ""
+    else:
+        return entries[0]['english']
+
+
 def get_time_before_hours(time, hours):
     return time - hours * 60 * 60
 
@@ -69,18 +93,19 @@ def get_giphy_trending_image():
     response= requests.get(url = GIPHY_TRENDING_URL, params=params)
     return response.json()['data']
 
-
-def get_giphy_image(word):
+def get_giphy_image(word, isKorean = True):
     print("sending request to Giphy Search API for the word " + word + " ...")
     params = dict (
         api_key = GIPHY_API_KEY,
-        lang='ko',
         q = word 
     )
+    if isKorean:
+        params['lang'] = 'ko'
+    
     response= requests.get(url = GIPHY_SEARCH_URL, params=params)
     items = response.json()['data']
     if len(items) == 0:
-        items = get_giphy_trending_image()
+        return None
 
 
     selected = random.choice(items)
@@ -136,7 +161,7 @@ def add_word():
     db = mysql.connection
     cur = db.cursor()
     for word in keywords:
-        cur.execute("insert into keywords values (%s, NULL, %s)", (word, current))
+        cur.execute("INSERT into keywords values (%s, NULL, %s)", (word, current))
     db.commit()
 
     return ", ".join(keywords)
@@ -163,8 +188,13 @@ def get_latest_keyword():
 
     if image_url is None:
         image_url = get_giphy_image(word)
-        # cur.execute('UPDATE keywords SET url = %s WHERE url IS NULL AND word = %s AND created_at = %s', (image_url, word, created_at))
-        # db.commit()
+    if image_url is None:
+        image_url = get_giphy_image(translate_to_english(word), False)
+    if image_url is None:
+        image_url = get_giphy_trending_image()
+    
+    # cur.execute('UPDATE keywords SET url = %s WHERE url IS NULL AND word = %s AND created_at = %s', (image_url, word, created_at))
+    # db.commit()
 
     time_string = time.strftime('%Y-%m-%d %H-%M', time.localtime(created_at))
     return render_template('show_image.html', keyword=word, image_url=image_url, created_at=time_string)
