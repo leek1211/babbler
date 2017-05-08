@@ -1,12 +1,10 @@
 {% extends "layout.html" %}
 {% block head %}
-<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 <script>
   setTimeout(function(){ window.location.reload(1); }, 30 * 1000);
 </script>
-<link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
-<style>
 
+<style>
 .bg {
     /* The image used */
     background-image: url("{{image_url}}");
@@ -55,19 +53,19 @@
 }
 </style>
 {% endblock %}
+
 {% block body %}
 <div class="bg">
-<div class="timestamp-box">
-<span class="timestamp">
-    {% for char in created_at %}
-    {{ char }}<br/>
-    {% endfor %}
-</span>
-</div>
-<div class="box">
-    <span class="keyword">{{keyword}}</span>
-</div>
-
+    <div class="timestamp-box">
+        <span class="timestamp">
+            {% for char in created_at %}
+            {{ char }}<br/>
+            {% endfor %}
+        </span>
+    </div>
+    <div class="box">
+        <span class="keyword">{{keyword}}</span>
+    </div>
 </div>
 {% endblock %}
 
