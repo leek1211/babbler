@@ -1,8 +1,5 @@
-<!doctype html>
-<title>Creep</title>
-<head>
-<link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
-<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+{% extends "layout.html" %}
+{% block head %}
 <script language='VBScript'>
   Sub Print()
   OLECMDID_PRINT = 6
@@ -11,9 +8,6 @@
   call WB.ExecWB(OLECMDID_PRINT, OLECMDEXECOPT_DONTPROMPTUSER,1)
   End Sub
   document.write "<object ID='WB' WIDTH=0 HEIGHT=0 CLASSID='CLSID:8856F961-340A-11D0-A96B-00C04FD705A2'></object>"
-</script>
-<script type="text/javascript"> 
-
 </script>
 <script type="text/javascript">
 
@@ -35,10 +29,12 @@ setTimeout(function(){
   window.onload=function(){self.print();} 
 {% endif %}
 </script> 
-</head>
-<body>
-{% for entry in entries %}
-  <span>{{entry.word}} {{entry.created_at}}</span><br/>
-{% endfor %}
-  </ul>
-</body>
+{% endblock %}
+
+{% block body %}
+  {% for entry in entries %}
+    <span>{{entry.word}} {{entry.created_at}}</span><br/>
+  {% endfor %}
+{% endblock %}
+
+
