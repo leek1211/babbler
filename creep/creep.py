@@ -208,6 +208,8 @@ def get_latest_keyword():
         image_url = get_giphy_image(word, False)
     if image_url is None:
         word = "NOT FOUND " + row['word']
+        cur.execute('DELETE FROM keywords WHERE word = %s', [row['word']])
+        db.commit()
         image_url = get_giphy_trending_image()
     
     # cur.execute('UPDATE keywords SET url = %s WHERE url IS NULL AND word = %s AND created_at = %s', (image_url, word, created_at))
