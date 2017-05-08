@@ -91,7 +91,8 @@ def get_giphy_trending_image():
         api_key = GIPHY_API_KEY
     )
     response= requests.get(url = GIPHY_TRENDING_URL, params=params)
-    return response.json()['data']
+    items = response.json()['data']
+    return random.choice(items)['images']['original']['url']
 
 def get_giphy_image(word, isKorean = True):
     print("sending request to Giphy Search API for the word " + word + " ...")
@@ -178,11 +179,18 @@ def get_latest_keyword():
     db = mysql.connection
     cur = db.cursor()
 
-    # Query the keywords only for the last 30 minutes.
     now = get_current_time()
-    hour_before = get_time_before_hours(now, 0.5)
-    cur.execute('SELECT * FROM keywords WHERE created_at > %s', [hour_before])
+    # Query the keywords within the last 2 minutes.
+    most_recent = get_time_before_hours(now, 0.0333333)
+    cur.execute('SELECT * FROM keywords WHERE created_at > %s', [most_recent])
     keywords = cur.fetchall()
+
+    # If there is none, query the keywords for the last one hour.
+    if len(keywords) == 0:
+        hour_before = get_time_before_hours(now, 1)
+        cur.execute('SELECT * FROM keywords WHERE created_at > %s', [hour_before])
+        keywords = cur.fetchall()
+
     if len(keywords) == 0:
         cur.execute('SELECT * FROM keywords ORDER BY created_at DESC LIMIT 100')
         keywords = cur.fetchall()
@@ -199,7 +207,7 @@ def get_latest_keyword():
         word = translate_to_english(word)
         image_url = get_giphy_image(word, False)
     if image_url is None:
-        word = row['word']
+        word = "NOT FOUND " + row['word']
         image_url = get_giphy_trending_image()
     
     # cur.execute('UPDATE keywords SET url = %s WHERE url IS NULL AND word = %s AND created_at = %s', (image_url, word, created_at))
