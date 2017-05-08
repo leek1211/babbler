@@ -1,30 +1,69 @@
 {% extends "layout.html" %}
 {% block head %}
 <script>
-  setTimeout(function(){ window.location.reload(1); }, 60 * 1000);
+function reloadImage(divId) {
+    $.get('image_info', function(data, status) {
+        let newUrl = data['image_url'];
+        let kw = data['keyword'];
+        let ca = data['created_at'];
+        ca = ca.split('').join('\n');
+        $(divId + ' > .timestamp-box > .timestamp').text(ca)
+        $(divId + ' > .keyword-box > .keyword').text(kw)
+        $(divId).css("background-image", 'url("' + newUrl +'")');
+        let nextTime = (Math.random() * 60 + 30) * 1000;
+        setTimeout(reloadImage, nextTime, divId);
+    });
+}
+reloadImage('#img11');
+reloadImage('#img12');
+reloadImage('#img13');
+reloadImage('#img21');
+reloadImage('#img22');
+reloadImage('#img23');
 </script>
 
 
 <style>
+
 .row {
     display: block;
-    height:33.33%;
-    font-size:0;
+    font-size:0;    
 }
+.row-1 {
+    height:66.66%;
+}
+.row-2 {
+    height:33.33%;
+}
+
 .bg {
     display: inline-block;
     
     /* The image used */
-    
     background-position: center;
     background-repeat: no-repeat;
     background-size: 100% 100%;
     /* Full height */
-    height: 100%;
-    width: 33.33%;
+
 
     /* Center and scale the image nicely */
     position: relative;
+}
+
+.bg-11 {
+    height: 100%;
+    width: 66.66%;
+    float:left;
+}
+.bg-12 {
+    height: 50%;
+    width: 33.33%;
+    float: right;
+}
+
+.bg-2 {
+    height: 100%;
+    width: 33.33%;
 }
 
 .keyword-box {
@@ -62,24 +101,59 @@
 {% endblock %}
 
 {% block body %}
-{% for i in range(3) %}
-    <div class="row">
-    {% for j in range(3) %}
-        <div class="bg" style='background-image: url("{{image_url[i*3 + j]}}");''>
-            <div class="timestamp-box">
-                <span class="timestamp">
-                    {% for char in created_at %}
-                    {{ char }}<br/>
-                    {% endfor %}
-                </span>
-            </div>
-            <div class="keyword-box">
-                <span class="keyword">{{keyword}}</span>
-            </div>
+<div class="row row-1">
+    <div id='img11' class="bg bg-11" style='background-image: url("");''>
+        <div class="timestamp-box">
+            <span class="timestamp"></span>
         </div>
-    {% endfor %}
+        <div class="keyword-box">
+            <span class="keyword"></span>
+        </div>
     </div>
-{% endfor %}
+    <div id='img12' class="bg bg-12" style='background-image: url("");''>
+        <div class="timestamp-box">
+            <span class="timestamp"></span>
+        </div>
+        <div class="keyword-box">
+            <span class="keyword"></span>
+        </div>
+    </div>
+    <div id='img13' class="bg bg-12" style='background-image: url("");''>
+        <div class="timestamp-box">
+            <span class="timestamp"></span>
+        </div>
+        <div class="keyword-box">
+            <span class="keyword"></span>
+        </div>
+    </div>
+</div>
+<div class="row row-2">
+    <div id='img21' class="bg bg-2" style='background-image: url("");''>
+        <div class="timestamp-box">
+            <span class="timestamp"></span>
+        </div>
+        <div class="keyword-box">
+            <span class="keyword"></span>
+        </div>
+    </div>
+    <div id='img22' class="bg bg-2" style='background-image: url("");''>
+        <div class="timestamp-box">
+            <span class="timestamp"></span>
+        </div>
+        <div class="keyword-box">
+            <span class="keyword"></span>
+        </div>
+    </div>
+    <div id='img23' class="bg bg-2" style='background-image: url("");''>
+        <div class="timestamp-box">
+            <span class="timestamp"></span>
+        </div>
+        <div class="keyword-box">
+            <span class="keyword"></span>
+        </div>
+    </div>
+</div>
+
 {% endblock %}
 
 

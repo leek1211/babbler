@@ -4,3 +4,6 @@ body, html {
     margin: 0;
     font-family:helvetica, sans-serif;
 }
+span {
+  white-space: pre;
+}

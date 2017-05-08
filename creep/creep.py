@@ -1,6 +1,6 @@
 import os
 from flask import Flask, request, g, redirect, url_for, abort, \
-     render_template, flash
+     render_template, flash, jsonify
 from flask_mysqldb import MySQL
 from konlpy.tag import Hannanum, Kkma, Komoran, Twitter
 import jpype
@@ -29,7 +29,8 @@ app.config.update(dict(
     MYSQL_PASSWORD='123456',
     MYSQL_DB='creep',
     MYSQL_CURSORCLASS='DictCursor',
-    MYSQL_PORT=3306
+    MYSQL_PORT=3306,
+    JSON_AS_ASCII=False
 ))
 
 env = os.environ
@@ -88,12 +89,7 @@ def get_current_time():
 def random_select_in_giphy_items(items):
     if len(items) == 0:
         return None
-    random.shuffle(items)
-    items = items * 9
-    selected = items[: 9]
-    selected = list(map(lambda x: x['images']['original']['url'], selected))
-
-    return selected
+    return random.choice(items)['images']['original']['url']
 
 def get_giphy_trending_image():
     print("seding request to Giphy Trending API")
@@ -184,6 +180,11 @@ def add_word():
     return ", ".join(keywords)
 
 @app.route('/images', methods=['GET'])
+def render_image_page():
+    result = get_latest_keyword()
+    return render_template('show_image.html')
+
+@app.route('/image_info', methods=['GET'])
 def get_latest_keyword():
     db = mysql.connection
     cur = db.cursor()
@@ -209,7 +210,7 @@ def get_latest_keyword():
     word = row['word']
     created_at = row['created_at']
     image_url = row['url']
-
+    
     if image_url is None:
         image_url = get_giphy_image(word)
     if image_url is None:
@@ -225,6 +226,11 @@ def get_latest_keyword():
     # db.commit()
 
     time_string = time.strftime('%Y-%m-%d %H-%M', time.localtime(created_at))
-    return render_template('show_image.html', keyword=word, image_url=image_url, created_at=time_string)
+    result = dict (
+        keyword=word,
+        image_url=image_url,
+        created_at=time_string
+    )
+    return jsonify(result)
 
 
