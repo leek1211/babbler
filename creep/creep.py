@@ -196,8 +196,10 @@ def get_latest_keyword():
     if image_url is None:
         image_url = get_giphy_image(word)
     if image_url is None:
-        image_url = get_giphy_image(translate_to_english(word), False)
+        word = translate_to_english(word)
+        image_url = get_giphy_image(word, False)
     if image_url is None:
+        word = row['word']
         image_url = get_giphy_trending_image()
     
     # cur.execute('UPDATE keywords SET url = %s WHERE url IS NULL AND word = %s AND created_at = %s', (image_url, word, created_at))
