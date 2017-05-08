@@ -132,14 +132,21 @@ GET /images : show images
 """
 @app.route('/')
 def show_entries():
+    interval_sec = 10
+    after = request.args.get('after')
+    if after is None:
+        after = get_current_time()
+    after = float(after)
+
+    after = after - interval_sec
     cur = mysql.connection.cursor()
-    cur.execute('SELECT * FROM keywords ORDER BY created_at DESC LIMIT 40')
+    cur.execute('SELECT * FROM keywords WHERE created_at >= %s ORDER BY created_at DESC', [after])
     keywords = cur.fetchall()
 
     for k in keywords:
         k['created_at'] = datetime.datetime.fromtimestamp(k['created_at'])
 
-    return render_template('show_entries.html', entries=keywords)
+    return render_template('show_entries.html', entries=keywords, intervalSec = interval_sec)
 
 @app.route('/words', methods=['POST'])
 def add_word():

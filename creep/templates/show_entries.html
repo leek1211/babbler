@@ -1,10 +1,44 @@
-{% extends "layout.html" %}
-{% block body %}
-  <ul class=entries>
-  {% for entry in entries %}
-  <li><h2>{{entry.word}} {{entry.url}} {{entry.created_at}}</h2> 
-  {% else %}
-    <li><em>Unbelievable.  No entries here so far</em>
-  {% endfor %}
+<!doctype html>
+<title>Creep</title>
+<head>
+<link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script language='VBScript'>
+  Sub Print()
+  OLECMDID_PRINT = 6
+  OLECMDEXECOPT_DONTPROMPTUSER = 2
+  OLECMDEXECOPT_PROMPTUSER = 1
+  call WB.ExecWB(OLECMDID_PRINT, OLECMDEXECOPT_DONTPROMPTUSER,1)
+  End Sub
+  document.write "<object ID='WB' WIDTH=0 HEIGHT=0 CLASSID='CLSID:8856F961-340A-11D0-A96B-00C04FD705A2'></object>"
+</script>
+<script type="text/javascript"> 
+
+</script>
+<script type="text/javascript">
+
+setTimeout(function(){
+  let now = new Date() / 1000;
+
+  var params = [
+      "after=" + now,
+  ];
+
+  window.location.href =
+      "http://" +
+      window.location.host +
+      window.location.pathname +
+      '?' + params.join('&');
+  
+}, {{ intervalSec }} * 1000);
+{% if (entries is defined) and entries %}
+  window.onload=function(){self.print();} 
+{% endif %}
+</script> 
+</head>
+<body>
+{% for entry in entries %}
+  <span>{{entry.word}} {{entry.created_at}}</span><br/>
+{% endfor %}
   </ul>
-{% endblock %}
+</body>
