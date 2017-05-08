@@ -84,6 +84,17 @@ def get_time_before_hours(time, hours):
 def get_current_time():
     return calendar.timegm(time.gmtime())
 
+
+def random_select_in_giphy_items(items):
+    if len(items) == 0:
+        return None
+    random.shuffle(items)
+    items = items * 9
+    selected = items[: 9]
+    selected = list(map(lambda x: x['images']['original']['url'], selected))
+
+    return selected
+
 def get_giphy_trending_image():
     print("seding request to Giphy Trending API")
     
@@ -92,7 +103,7 @@ def get_giphy_trending_image():
     )
     response= requests.get(url = GIPHY_TRENDING_URL, params=params)
     items = response.json()['data']
-    return random.choice(items)['images']['original']['url']
+    return random_select_in_giphy_items(items)
 
 def get_giphy_image(word, isKorean = True):
     print("sending request to Giphy Search API for the word " + word + " ...")
@@ -108,9 +119,7 @@ def get_giphy_image(word, isKorean = True):
     if len(items) == 0:
         return None
 
-
-    selected = random.choice(items)
-    return selected['images']['original']['url']
+    return random_select_in_giphy_items(items)
 
 def get_keywords(nouns, freq):
     uniq = set(nouns)

@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 {% block head %}
 <script>
-  setTimeout(function(){ window.location.reload(1); }, 30 * 1000);
+  setTimeout(function(){ window.location.reload(1); }, 60 * 1000);
 </script>
 
 
@@ -15,16 +15,15 @@
     display: inline-block;
     
     /* The image used */
-    background-image: url("{{image_url}}");
-    background-color: black;
+    
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
     /* Full height */
     height: 100%;
     width: 33.33%;
 
     /* Center and scale the image nicely */
-    background-position: center;
-    background-repeat: no-repeat;
-    background-size: 100% 100%;
     position: relative;
 }
 
@@ -66,7 +65,7 @@
 {% for i in range(3) %}
     <div class="row">
     {% for j in range(3) %}
-        <div class="bg">
+        <div class="bg" style='background-image: url("{{image_url[i*3 + j]}}");''>
             <div class="timestamp-box">
                 <span class="timestamp">
                     {% for char in created_at %}
