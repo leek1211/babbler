@@ -133,7 +133,7 @@ GET /images : show images
 @app.route('/')
 def show_entries():
     cur = mysql.connection.cursor()
-    cur.execute('select * from keywords order by created_at desc limit 40')
+    cur.execute('SELECT * FROM keywords ORDER BY created_at DESC LIMIT 40')
     keywords = cur.fetchall()
 
     for k in keywords:
@@ -174,10 +174,10 @@ def get_latest_keyword():
     # Query the keywords only for the last 30 minutes.
     now = get_current_time()
     hour_before = get_time_before_hours(now, 0.5)
-    cur.execute('select * from keywords where created_at > %s', [hour_before])
+    cur.execute('SELECT * FROM keywords WHERE created_at > %s', [hour_before])
     keywords = cur.fetchall()
     if len(keywords) == 0:
-        cur.execute('select * from keywords order by created_at desc limit 100')
+        cur.execute('SELECT * FROM keywords ORDER BY created_at DESC LIMIT 100')
         keywords = cur.fetchall()
 
     row = random.choice(keywords)
@@ -198,3 +198,5 @@ def get_latest_keyword():
 
     time_string = time.strftime('%Y-%m-%d %H-%M', time.localtime(created_at))
     return render_template('show_image.html', keyword=word, image_url=image_url, created_at=time_string)
+
+
