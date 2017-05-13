@@ -10,7 +10,6 @@
   document.write "<object ID='WB' WIDTH=0 HEIGHT=0 CLASSID='CLSID:8856F961-340A-11D0-A96B-00C04FD705A2'></object>"
 </script>
 <script type="text/javascript">
-
 setTimeout(function(){
   let now = new Date() / 1000;
 
@@ -25,9 +24,11 @@ setTimeout(function(){
       '?' + params.join('&');
   
 }, {{ intervalSec }} * 1000);
+
 {% if (entries is defined) and entries %}
   window.onload=function(){self.print();} 
 {% endif %}
+
 </script> 
 {% endblock %}
 

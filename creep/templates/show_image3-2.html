@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 {% block head %}
 <script>
-reloadImage('#img11');
+reloadImage('.img');
 setTimeout(changeImageSequence, imageSequenceInterval);
 </script>
 
@@ -24,12 +24,21 @@ setTimeout(changeImageSequence, imageSequenceInterval);
     background-repeat: no-repeat;
     background-size: 100% 100%;
     /* Full height */
-    height: 100%;
-    width: 100%;
-    float:left;
+
 
     /* Center and scale the image nicely */
     position: relative;
+}
+
+.bg-11 {
+    height: 100%;
+    width: 33.33%;
+    float:left;
+}
+.bg-12 {
+    height: 33.33%;
+    width: 33.33%;
+    float: right;
 }
 
 .keyword-box {
@@ -68,7 +77,23 @@ setTimeout(changeImageSequence, imageSequenceInterval);
 
 {% block body %}
 <div class="row row-1">
-    <div id='img11' class="bg" style='background-image: url("");''>
+    <div class="img bg bg-11" style='background-image: url("");''>
+        <div class="timestamp-box">
+            <span class="timestamp"></span>
+        </div>
+        <div class="keyword-box">
+            <span class="keyword"></span>
+        </div>
+    </div>
+    <div class="img bg bg-11" style='background-image: url("");''>
+        <div class="timestamp-box">
+            <span class="timestamp"></span>
+        </div>
+        <div class="keyword-box">
+            <span class="keyword"></span>
+        </div>
+    </div>
+    <div class="img bg bg-11" style='background-image: url("");''>
         <div class="timestamp-box">
             <span class="timestamp"></span>
         </div>
@@ -77,5 +102,7 @@ setTimeout(changeImageSequence, imageSequenceInterval);
         </div>
     </div>
 </div>
+
 {% endblock %}
+
 

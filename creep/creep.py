@@ -181,8 +181,11 @@ def add_word():
 
 @app.route('/images', methods=['GET'])
 def render_image_page():
-    result = get_latest_keyword()
-    return render_template('show_image.html')
+    seq = request.args.get('seq')
+    if seq is None:
+        return render_template('show_image.html')
+    else:
+        return render_template('show_image' + seq + '.html')
 
 @app.route('/image_info', methods=['GET'])
 def get_latest_keyword():

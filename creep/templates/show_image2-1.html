@@ -1,0 +1,159 @@
+{% extends "layout.html" %}
+{% block head %}
+<script>
+reloadImage('#img11');
+reloadImage('#img12');
+reloadImage('#img13');
+reloadImage('#img21');
+reloadImage('#img22');
+reloadImage('#img23');
+reloadImage('#img31');
+reloadImage('#img32');
+reloadImage('#img33');
+setTimeout(changeImageSequence, imageSequenceInterval);
+</script>
+
+
+<style>
+
+.row {
+    display: block;
+    font-size:0;    
+    height:33.33%;
+}
+
+.bg {
+    display: inline-block;
+    
+    /* The image used */
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
+    /* Full height */
+
+
+    /* Center and scale the image nicely */
+    position: relative;
+}
+
+.bg-2 {
+    height: 100%;
+    width: 33.33%;
+}
+
+.keyword-box {
+    position: absolute;
+    height: 20%;
+    width: 20%;
+    top: 40%;
+    left: 40%;
+    background-color: rgba(1,23,255,0.5);
+
+    display: table;
+    text-align: center;
+}
+.keyword-box > .keyword {
+    font-size: 8px;
+    display: table-cell;
+    vertical-align: middle;
+    color: #FFFFFF;
+}
+
+.timestamp-box {
+    position: absolute;
+    left: 98%;
+    height: 100%;
+    width: 2%;
+    display:table;
+}
+.timestamp {
+  color: #FFFFFF;
+  font-size:8px;
+  display:table-cell;
+  vertical-align:middle;
+}
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="row">
+    <div id='img11' class="bg bg-2" style='background-image: url("");''>
+        <div class="timestamp-box">
+            <span class="timestamp"></span>
+        </div>
+        <div class="keyword-box">
+            <span class="keyword"></span>
+        </div>
+    </div>
+    <div id='img12' class="bg bg-2" style='background-image: url("");''>
+        <div class="timestamp-box">
+            <span class="timestamp"></span>
+        </div>
+        <div class="keyword-box">
+            <span class="keyword"></span>
+        </div>
+    </div>
+    <div id='img13' class="bg bg-2" style='background-image: url("");''>
+        <div class="timestamp-box">
+            <span class="timestamp"></span>
+        </div>
+        <div class="keyword-box">
+            <span class="keyword"></span>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div id='img21' class="bg bg-2" style='background-image: url("");''>
+        <div class="timestamp-box">
+            <span class="timestamp"></span>
+        </div>
+        <div class="keyword-box">
+            <span class="keyword"></span>
+        </div>
+    </div>
+    <div id='img22' class="bg bg-2" style='background-image: url("");''>
+        <div class="timestamp-box">
+            <span class="timestamp"></span>
+        </div>
+        <div class="keyword-box">
+            <span class="keyword"></span>
+        </div>
+    </div>
+    <div id='img23' class="bg bg-2" style='background-image: url("");''>
+        <div class="timestamp-box">
+            <span class="timestamp"></span>
+        </div>
+        <div class="keyword-box">
+            <span class="keyword"></span>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div id='img31' class="bg bg-2" style='background-image: url("");''>
+        <div class="timestamp-box">
+            <span class="timestamp"></span>
+        </div>
+        <div class="keyword-box">
+            <span class="keyword"></span>
+        </div>
+    </div>
+    <div id='img32' class="bg bg-2" style='background-image: url("");''>
+        <div class="timestamp-box">
+            <span class="timestamp"></span>
+        </div>
+        <div class="keyword-box">
+            <span class="keyword"></span>
+        </div>
+    </div>
+    <div id='img33' class="bg bg-2" style='background-image: url("");''>
+        <div class="timestamp-box">
+            <span class="timestamp"></span>
+        </div>
+        <div class="keyword-box">
+            <span class="keyword"></span>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+

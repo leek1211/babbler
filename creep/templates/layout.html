@@ -4,6 +4,67 @@
 <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/png">
 <link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script>
+
+var colors = ["rgba(213,0,0,0.3)","rgba(41,98,255,0.3)","rgba(230,74,25,0.3)","rgba(255,64,129,0.3)","rgba(3,169,244,0.3)","rgba(198,255,0,0.3)","rgba(121,85,72,0.3)","rgba(170,0,255,0.3)","rgba(24,255,255,0.3)","rgba(255,214,0,0.3)","rgba(98,0,234,0.3)","rgba(0,191,165,0.3)","rgba(255,171,0,0.3)","rgba(48,79,254,0.3)","rgba(27,94,32,0.3)","rgba(255,204,128,0.3)"]
+
+
+function renderColor() {
+  $( ".keyword-box" ).each(function( index ) {
+    let colorSeed = getRandomInt(0, colors.length-1);
+    let randomColor = colors[colorSeed];
+    $(this).css("background-color", randomColor);
+    $(this).css("height", "100%");
+    $(this).css("width", "100%");
+    $(this).css("top", "0%");
+    $(this).css("left", "0%");
+  });
+}
+$(window).load(renderColor);
+
+function getRandomInt(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+
+imageSequences = ["", "1-1", "1-2", "1-3", "1-4", "1-5", "1-6", "1-7", "1-8", "2-1", "2-2", "3-1", "3-2"];
+
+function reloadImage(divId) {
+    $.get('image_info', function(data, status) {
+        let newUrl = data['image_url'];
+        let kw = data['keyword'];
+        let ca = data['created_at'];
+        ca = ca.split('').join('\n');
+        $(divId + ' > .timestamp-box > .timestamp').text(ca)
+        $(divId + ' > .keyword-box > .keyword').text(kw)
+        $(divId).css("background-image", 'url("' + newUrl +'")');
+        let nextTime = (Math.random() * 5 + 8) * 1000;
+        setTimeout(reloadImage, nextTime, divId);
+    });
+}
+
+imageSequenceInterval = 15 * 1000;
+
+function changeImageSequence() {
+  // var seed = imageSequences[getRandomInt(0, imageSequences.length - 1)];
+  idx = Math.floor(new Date().getTime() / imageSequenceInterval);
+  idx = idx % imageSequences.length;
+  let seed = imageSequences[idx];
+  
+  var params = [
+      "seq=" + seed,
+  ];
+
+  window.location.href =
+      "http://" +
+      window.location.host +
+      window.location.pathname +
+      '?' + params.join('&');
+}
+
+
+
+</script>
 {% block head %}
 {% endblock %}
 </head>
