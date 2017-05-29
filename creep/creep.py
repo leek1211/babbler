@@ -87,9 +87,12 @@ def get_current_time():
 
 
 def random_select_in_giphy_items(items):
+    items = list(filter(lambda x: int(x['images']['original']['webp_size']) <= 2000000, items))
+
     if len(items) == 0:
         return None
-    return random.choice(items)['images']['original']['url']
+
+    return random.choice(items)['images']['original']['webp']
 
 def get_giphy_trending_image():
     print("seding request to Giphy Trending API")
@@ -105,7 +108,8 @@ def get_giphy_image(word, isKorean = True):
     print("sending request to Giphy Search API for the word " + word + " ...")
     params = dict (
         api_key = GIPHY_API_KEY,
-        q = word 
+        q = word,
+        limit = 50
     )
     if isKorean:
         params['lang'] = 'ko'

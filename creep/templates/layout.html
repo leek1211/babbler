@@ -35,15 +35,22 @@ function reloadImage(divId) {
         let kw = data['keyword'];
         let ca = data['created_at'];
         ca = ca.split('').join('\n');
-        $(divId + ' > .timestamp-box > .timestamp').text(ca)
-        $(divId + ' > .keyword-box > .keyword').text(kw)
-        $(divId).css("background-image", 'url("' + newUrl +'")');
-        let nextTime = (Math.random() * 5 + 8) * 1000;
-        setTimeout(reloadImage, nextTime, divId);
+        
+        var img = new Image();
+        img.onload = function() {
+          $(divId + ' > .timestamp-box > .timestamp').text(ca)
+          $(divId + ' > .keyword-box > .keyword').text(kw)
+          $(divId).css("background-image", 'url("' + newUrl +'")');
+          let nextTime = (Math.random() * 5 + 5) * 1000;
+          setTimeout(reloadImage, nextTime, divId);
+        }
+
+        img.src = newUrl;
+        if (img.complete) img.onload();
     });
 }
 
-imageSequenceInterval = 15 * 1000;
+imageSequenceInterval = 30 * 1000;
 
 function changeImageSequence() {
   // var seed = imageSequences[getRandomInt(0, imageSequences.length - 1)];
@@ -70,5 +77,6 @@ function changeImageSequence() {
 </head>
 
 <body>
+<img id='giphy-logo' src="{{ url_for('static', filename='giphy-logo.png') }}" style='position: absolute;right: 0px;bottom: 0px; z-index: 30;'/>
 {% block body %}{% endblock %}
 </body>
